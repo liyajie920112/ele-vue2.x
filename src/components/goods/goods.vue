@@ -2,16 +2,16 @@
   <div class='goods'>
     <div class="menu-wrapper" ref="menuWrapper">
       <ul>
-        <li class="menu-item" v-for="good in goods">
+        <li :class="{'active':curIndex == index}" class=" menu-item" @click="selectMenu(index,$event)" v-for="(good,index) in goods ">
           <span class='text border-b-1px'>
-            <icon v-show="good.type > 0" :type='good.type' :icon-num='2'></icon>{{good.name}}
+            <icon v-show="good.type> 0" :type='good.type' :icon-num='2'></icon>{{good.name}}
           </span>
         </li>
       </ul>
     </div>
     <div class="foods-wrapper" ref="foodsWrapper">
       <ul>
-        <li v-for="item in goods">
+        <li v-for="item in goods" class="food-list-hook">
           <dl>
             <dt class="title" v-text="item.name"></dt>
             <dd class="food-item border-b-1px" v-for="food in item.foods">
@@ -53,25 +53,60 @@ export default {
   },
   data() {
     return {
-      goods: []
+      goods: [],
+      listHeight: [],
+      scrollY: 0
+    }
+  },
+  computed: {
+    curIndex() {
+      for (var i = 0, len = this.listHeight.length; i < len; i++) {
+        let minh = this.listHeight[i]
+        let maxh = this.listHeight[i + 1]
+        if (!maxh || (this.scrollY >= minh && this.scrollY < maxh)) {
+          return i
+        }
+      }
+      return 0
     }
   },
   created() {
     this.$http.get('/api/goods').then((res) => {
       res = res.body
-      console.log(res)
       if (res.errno === ERR_OK) {
         this.goods = res.data
+        // 数据绑定真正变化是在nextTick方法之后, 操作原生dom的时候一定确保dom都已经加载完毕
         this.$nextTick(() => {
           this._initScroll()
+          this._calcFoodsHeight()
         })
       }
     })
   },
   methods: {
+    // 定位右边菜的位置
+    selectMenu(index, event) {
+      if (!event._constructed) { return false }
+      let foodList = this.$refs.foodsWrapper.getElementsByClassName('food-list-hook')
+      let el = foodList[index]
+      this.foodsScroll.scrollToElement(el, 300)
+    },
     _initScroll() {
-      this.menuScroll = new BScroll(this.$refs.menuWrapper, {})
-      this.foodsScroll = new BScroll(this.$refs.foodsWrapper, {})
+      this.menuScroll = new BScroll(this.$refs.menuWrapper, {
+        click: true
+      })
+      this.foodsScroll = new BScroll(this.$refs.foodsWrapper, {
+        probeType: 3
+      })
+      this.foodsScroll.on('scroll', (pos) => {
+        this.scrollY = Math.abs(Math.round(pos.y))
+      })
+    },
+    _calcFoodsHeight() {
+      var items = this.$refs.foodsWrapper.getElementsByClassName('food-list-hook')
+      for (var i = 0, len = items.length; i < len; i++) {
+        this.listHeight.push(items[i].offsetTop)
+      }
     }
   },
   components: {
@@ -100,6 +135,14 @@ export default {
       width: 56px;
       line-height: 14px;
       padding: 0 12px;
+      &.active {
+        background-color: #fff;
+        margin-top: -1px;
+        .text {
+          font-weight: 700;
+          @include border-none();
+        }
+      }
       .text {
         display: table-cell;
         width: 56px;
@@ -147,7 +190,7 @@ export default {
         .sell-rating {
           font-size: 10px;
           color: rgb(147, 153, 159);
-          line-height: 10px;
+          line-height: 12px;
           margin-top: 8px;
         }
         .sell-rating {
@@ -156,14 +199,14 @@ export default {
             margin-right: 12px;
             font-size: 10px;
           }
-          .rating{
+          .rating {
             font-size: 10px;
           }
         }
         .price {
-          margin-top: 8px;
+          margin-top: 4px;
           font-weight: 700;
-          line-height: 24px;
+          line-height: 16px;
           font-size: 0;
           .cur-price {
             color: rgb(240, 20, 20);
