@@ -37,12 +37,14 @@
         </li>
       </ul>
     </div>
+    <shop-cart :delivery-price='seller.deliveryPrice' :min-price='seller.minPrice'></shop-cart>
   </div>
 </template>
 
 <script>
 import Icon from '@/components/icon/icon'
 import BScroll from 'better-scroll'
+import ShopCart from '@/components/shopcart/shopcart'
 
 const ERR_OK = 0
 export default {
@@ -110,7 +112,8 @@ export default {
     }
   },
   components: {
-    Icon
+    Icon,
+    ShopCart
   }
 }
 </script>
