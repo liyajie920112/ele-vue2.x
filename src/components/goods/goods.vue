@@ -31,13 +31,16 @@
                   </span>
                   <span class="old-price" v-if="food.oldPrice" v-text="'￥'+food.oldPrice"></span>
                 </div>
+                <div class="cartcontrol-wrapper">
+                  <cart-control :food='food'></cart-control>
+                </div>
               </div>
             </dd>
           </dl>
         </li>
       </ul>
     </div>
-    <shop-cart :delivery-price='seller.deliveryPrice' :min-price='seller.minPrice'></shop-cart>
+    <shop-cart :select-foods='selectFoods' :delivery-price='seller.deliveryPrice' :min-price='seller.minPrice'></shop-cart>
   </div>
 </template>
 
@@ -45,6 +48,7 @@
 import Icon from '@/components/icon/icon'
 import BScroll from 'better-scroll'
 import ShopCart from '@/components/shopcart/shopcart'
+import CartControl from '@/components/cartcontrol/cartcontrol'
 
 const ERR_OK = 0
 export default {
@@ -60,6 +64,7 @@ export default {
       scrollY: 0
     }
   },
+  transitions: {},
   computed: {
     curIndex() {
       for (var i = 0, len = this.listHeight.length; i < len; i++) {
@@ -70,6 +75,18 @@ export default {
         }
       }
       return 0
+    },
+    // 此处可以优化, 因为每次都会遍历所有的数据
+    selectFoods() {
+      let foods = []
+      this.goods.forEach((good) => {
+        good.foods.forEach((food) => {
+          if (food.count) {
+            foods.push(food)
+          }
+        })
+      })
+      return foods
     }
   },
   created() {
@@ -98,7 +115,8 @@ export default {
         click: true
       })
       this.foodsScroll = new BScroll(this.$refs.foodsWrapper, {
-        probeType: 3
+        probeType: 3,
+        click: true
       })
       this.foodsScroll.on('scroll', (pos) => {
         this.scrollY = Math.abs(Math.round(pos.y))
@@ -113,7 +131,8 @@ export default {
   },
   components: {
     Icon,
-    ShopCart
+    ShopCart,
+    CartControl
   }
 }
 </script>
@@ -224,6 +243,11 @@ export default {
             font-size: 10px;
             color: rgb(147, 153, 159);
           }
+        }
+        .cartcontrol-wrapper {
+          position: absolute;
+          right: 0;
+          bottom: 12px;
         }
       }
     }

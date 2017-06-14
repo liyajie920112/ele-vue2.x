@@ -3,15 +3,16 @@
     <div class="content">
       <div class="content-left">
         <div class="logo-wrapper">
-          <div class="logo">
+          <div class="logo" :class='{active:active}'>
             <i class="icon-shopping_cart"></i>
           </div>
+          <div class="num" v-show="active">{{totalCount}}</div>
         </div>
-        <div class="price">￥{{totalPrice}}</div>
+        <div class="price" :class='{active:active}'>￥{{totalPrice}}</div>
         <div class="desc">另需配送费￥{{deliveryPrice}}元</div>
       </div>
-      <div class="content-right">
-        <div class="pay">￥{{minPrice}}起送</div>
+      <div class="content-right" :class='{payActive : payActive}'>
+        <div class="pay">{{payDesc}}</div>
       </div>
     </div>
   </div>
@@ -22,7 +23,7 @@ export default {
     selectFoods: {
       type: Array,
       default() {
-        return [{ price: 10, count: 2 }]
+        return [{ price: 5, count: 4 }]
       }
     },
     deliveryPrice: {
@@ -35,21 +36,45 @@ export default {
     }
   },
   computed: {
+    // 总金额
     totalPrice() {
       let totalP = 0
       this.selectFoods.forEach((food) => {
-        totalP += (food.price * 2)
+        totalP += (food.price * food.count)
       })
       return totalP
     },
+    // 购物车中商品总数量
     totalCount() {
       let total = 0
       this.selectFoods.forEach((food) => {
         total += food.count
       })
       return total
+    },
+    // 购物车有商品后的样式
+    active() {
+      return this.totalCount > 0
+    },
+    // 配送描述信息
+    payDesc() {
+      // 1. 购物车为空的时候, 显示 多少元起送
+      // 2. 有商品的时候, 显示还差多少元起送
+      // 3. 达到起送费的时候, 显示去结算,并修改样式
+      let desc = `￥${this.minPrice}元起送`
+      if (this.active) {
+        let diff = this.minPrice - this.totalPrice
+        if (diff > 0) {
+          desc = `还差￥${diff}起送`
+        } else {
+          desc = '去结算'
+        }
+      }
+      return desc
+    },
+    payActive() {
+      return (this.minPrice - this.totalPrice) <= 0
     }
-
   },
   data() {
     return {}
@@ -90,11 +115,32 @@ export default {
           border-radius: 50%;
           background-color: #2b343c;
           text-align: center;
+          &.active {
+            background-color: rgb(0, 160, 220);
+            .icon-shopping_cart {
+              color: #fff;
+            }
+          }
           .icon-shopping_cart {
             vertical-align: top;
             font-size: 24px;
             line-height: 44px;
           }
+        }
+        .num {
+          position: absolute;
+          top: 0;
+          right: 0;
+          width: 24px;
+          height: 16px;
+          line-height: 16px;
+          border-radius: 12px;
+          text-align: center;
+          font-size: 9px;
+          font-weight: 700;
+          color: #fff;
+          background-color: rgb(240, 20, 20);
+          box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.4);
         }
       }
       .price {
@@ -107,6 +153,9 @@ export default {
         padding-right: 12px;
         box-sizing: border-box;
         border-right: 1px solid rgba(255, 255, 255, 0.1);
+        &.active {
+          color: #fff;
+        }
       }
       .desc {
         display: inline-block;
@@ -119,6 +168,10 @@ export default {
     .content-right {
       width: 105px;
       background-color: #2b343c;
+      &.payActive {
+        color: #fff;
+        background-color: #00b43c;
+      }
       .pay {
         font-size: 12px;
         line-height: 48px;
