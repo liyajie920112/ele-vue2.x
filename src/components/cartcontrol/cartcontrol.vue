@@ -1,12 +1,12 @@
 <template>
   <div class="cartcontrol">
     <transition name='slide'>
-      <div @click='decreaseCart' class="cart-decrease icon-remove_circle_outline" v-show="food.count > 0"></div>
+      <div @click.stop='decreaseCart' class="cart-decrease icon-remove_circle_outline" v-show="food.count > 0"></div>
     </transition>
     <transition name='fade'>
       <div class="cart-count" v-show="food.count > 0" v-text="food.count">2</div>
     </transition>
-    <div class="cart-increase icon-add_circle" @click='addCart'></div>
+    <div ref="increase" class="cart-increase icon-add_circle" @click.stop='addCart'></div>
   </div>
 </template>
 <script>
@@ -15,8 +15,6 @@ export default {
     food: {
       type: Object
     }
-  },
-  created() {
   },
   methods: {
     addCart(event) {
@@ -29,6 +27,8 @@ export default {
       } else {
         this.food.count++
       }
+      // 发射一个事件
+      this.$emit('cart-add', this.$refs.increase)
     },
     decreaseCart(event) {
       if (!event._constructed) { return }
@@ -70,7 +70,7 @@ export default {
     line-height: 24px;
     &.fade-enter-active,
     &.fade-leave-active {
-      transition: all 0.5s;
+      transition: all 0.4s;
     }
     &.fade-enter,
     &.fade-leave-active {

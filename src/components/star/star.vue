@@ -46,6 +46,8 @@ export default {
 @import '../../common/sass/mixin.scss';
 
 .star {
+  display: inline-block;
+  vertical-align: top;
   &.star-24 {
     .star-item {
       display: inline-block;
@@ -75,7 +77,7 @@ export default {
       height: 15px;
       background-repeat: no-repeat;
       background-size: 15px 15px;
-      margin-right: 15px;
+      margin-right: 6px;
       &:last-child {
         margin-right: 0;
       }

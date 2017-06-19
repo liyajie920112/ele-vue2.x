@@ -14,7 +14,7 @@
         <li v-for="item in goods" class="food-list-hook">
           <dl>
             <dt class="title" v-text="item.name"></dt>
-            <dd class="food-item border-b-1px" v-for="food in item.foods">
+            <dd class="food-item border-b-1px" @click='selectFood(food,$event)' v-for="food in item.foods">
               <div class="icon">
                 <img width="57" height="57" :src="food.icon" alt="">
               </div>
@@ -32,7 +32,7 @@
                   <span class="old-price" v-if="food.oldPrice" v-text="'￥'+food.oldPrice"></span>
                 </div>
                 <div class="cartcontrol-wrapper">
-                  <cart-control :food='food'></cart-control>
+                  <cart-control @cart-add='_drop' :food='food'></cart-control>
                 </div>
               </div>
             </dd>
@@ -40,7 +40,8 @@
         </li>
       </ul>
     </div>
-    <shop-cart :select-foods='selectFoods' :delivery-price='seller.deliveryPrice' :min-price='seller.minPrice'></shop-cart>
+    <shop-cart ref="shopcart" :select-foods='selectFoods' :delivery-price='seller.deliveryPrice' :min-price='seller.minPrice'></shop-cart>
+    <food @addCart='addCart' ref="food" :food='selectedFood'></food>
   </div>
 </template>
 
@@ -49,6 +50,7 @@ import Icon from '@/components/icon/icon'
 import BScroll from 'better-scroll'
 import ShopCart from '@/components/shopcart/shopcart'
 import CartControl from '@/components/cartcontrol/cartcontrol'
+import Food from '@/components/food/food'
 
 const ERR_OK = 0
 export default {
@@ -61,10 +63,10 @@ export default {
     return {
       goods: [],
       listHeight: [],
-      scrollY: 0
+      scrollY: 0,
+      selectedFood: {}
     }
   },
-  transitions: {},
   computed: {
     curIndex() {
       for (var i = 0, len = this.listHeight.length; i < len; i++) {
@@ -110,6 +112,15 @@ export default {
       let el = foodList[index]
       this.foodsScroll.scrollToElement(el, 300)
     },
+    // 选中商品
+    selectFood(food, event) {
+      if (!event._constructed) { return false }
+      this.selectedFood = food
+      this.$refs.food.showDetail()
+    },
+    addCart(el) {
+      this._drop(el)
+    },
     _initScroll() {
       this.menuScroll = new BScroll(this.$refs.menuWrapper, {
         click: true
@@ -127,12 +138,22 @@ export default {
       for (var i = 0, len = items.length; i < len; i++) {
         this.listHeight.push(items[i].offsetTop)
       }
+    },
+    _drop(el) {
+      // el就是点击的加号, 是一个dom对象
+      // 触发购物车组件中drop方法
+      // 父组件触发子组件的事件只需要使用 ref 属性, 这样我们再使用this.$refs就能获取到子组件对象 , 就可以直接调用其组件的方法了.
+      this.$refs.shopcart.drop(el)
     }
+  },
+  beforeDestroy() {
+    this.$off('cart-add', this._drop)
   },
   components: {
     Icon,
     ShopCart,
-    CartControl
+    CartControl,
+    Food
   }
 }
 </script>

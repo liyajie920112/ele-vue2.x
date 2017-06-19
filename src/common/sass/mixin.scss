@@ -9,6 +9,29 @@
     border-bottom: 1px solid $color;
   }
 }
+@mixin border-t-1px ($color) {
+  position: relative;
+  &:after {
+    position: absolute;
+    width: 100%;
+    top: 0;
+    left: 0;
+    content: ' ';
+    border-top: 1px solid $color;
+  }
+}
+
+@mixin border-r-1px ($color) {
+  position: relative;
+  &:after {
+    position: absolute;
+    height: 100%;
+    top: 0;
+    right: 0;
+    content: ' ';
+    border-right: 1px solid $color;
+  }
+}
 
 @mixin border-none () {
   position: relative;
